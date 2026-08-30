@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Logic Puzzle Generator - Story-Driven Murdoku Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            height: fit-content;
+        }
+
+        .panel-section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .panel-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .panel-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-section h3::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background: #d5dbdb;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--light);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--gradient);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .preview-area {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-height: 600px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: var(--light);
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: var(--gradient);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .puzzle-grid {
+            display: grid;
+            gap: 2px;
+            background: var(--dark);
+            padding: 2px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .grid-cell {
+            background: white;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            position: relative;
+        }
+
+        .grid-cell.given {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .grid-cell.solved {
+            background: #d5f5e3;
+            color: var(--success);
+        }
+
+        .grid-cell.error {
+            background: #fadbd8;
+            color: var(--accent);
+        }
+
+        .story-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .story-box h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .clue-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .clue-list li {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: var(--light);
+            border-radius: 8px;
+            border-left: 3px solid var(--secondary);
+            transition: all 0.3s ease;
+        }
+
+        .clue-list li:hover {
+            transform: translateX(5px);
+            background: #d5dbdb;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .stat-card .label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .verification-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .badge-success {
+            background: #d5f5e3;
+            color: var(--success);
+        }
+
+        .badge-error {
+            background: #fadbd8;
+            color: var(--accent);
+        }
+
+        .badge-warning {
+            background: #fdebd0;
+            color: var(--warning);
+        }
+
+        .bulk-controls {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--light);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .theme-option {
+            padding: 10px;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-option:hover,
+        .theme-option.selected {
+            border-color: var(--secondary);
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .difficulty-indicator {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .diff-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--light);
+        }
+
+        .diff-dot.filled {
+            background: var(--gradient);
+        }
+
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--dark);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧩 Premium Logic Puzzle Generator</h1>
+            <p>Create story-driven Murdoku-style puzzles with complete control • Bulk Generation • Auto-Verification • KDP Ready</p>
+        </header>
+
+        <div class="main-grid">
+            <aside class="control-panel">
+                <div class="panel-section">
+                    <h3>Puzzle Configuration</h3>
+                    
+                    <label for="gridSize">Grid Size</label>
+                    <select id="gridSize">
+                        <option value="4">4×4 (Easy)</option>
+                        <option value="6">6×6 (Medium)</option>
+                        <option value="8" selected>8×8 (Standard)</option>
+                        <option value="9">9×9 (Classic)</option>
+                        <option value="10">10×10 (Advanced)</option>
+                        <option value="12">12×12 (Expert)</option>
+                    </select>
+
+                    <label for="difficulty">Difficulty Level</label>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Easy</span>
+                            <span id="difficultyValue">50%</span>
+                            <span>Hard</span>
+                        </div>
+                        <input type="range" id="difficulty" min="20" max="80" value="50">
+                    </div>
+                    <div class="difficulty-indicator" id="difficultyIndicator"></div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Story Theme</h3>
+                    
+                    <label for="storyTheme">Select Theme</label>
+                    <div class="theme-selector" id="themeSelector">
+                        <div class="theme-option selected" data-theme="mystery">🔍 Mystery</div>
+                        <div class="theme-option" data-theme="fantasy">🏰 Fantasy</div>
+                        <div class="theme-option" data-theme="scifi">🚀 Sci-Fi</div>
+                        <div class="theme-option" data-theme="historical">📜 Historical</div>
+                        <div class="theme-option" data-theme="modern">🏙️ Modern</div>
+                        <div class="theme-option" data-theme="custom">✏️ Custom</div>
+                    </div>
+
+                    <label for="storyTitle">Story Title</label>
+                    <input type="text" id="storyTitle" placeholder="The Missing Heirloom">
+
+                    <label for="storyPremise">Story Premise</label>
+                    <textarea id="storyPremise" placeholder="Describe the mystery or scenario..."></textarea>
+
+                    <label for="characters">Characters/Items (comma-separated)</label>
+                    <input type="text" id="characters" placeholder="Detective, Butler, Chef, Gardener...">
+                </div>
+
+                <div class="panel-section">
+                    <h3>Clue Generation</h3>
+                    
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="directClues" checked> Direct Clues
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="negativeClues" checked> Negative Clues (NOT statements)
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="relationalClues" checked> Relational Clues
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="conditionalClues"> Conditional Clues (IF-THEN)
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="spatialClues"> Spatial/Positional Clues
+                        </label>
+                    </div>
+
+                    <label for="clueCount">Number of Clues</label>
+                    <input type="number" id="clueCount" min="5" max="50" value="15">
+                </div>
+
+                <div class="panel-section">
+                    <h3>Bulk Generation</h3>
+                    
+                    <label for="batchSize">Puzzles to Generate</label>
+                    <input type="number" id="batchSize" min="1" max="100" value="1">
+
+                    <label for="seedControl">Seed Control (for reproducibility)</label>
+                    <input type="text" id="seedControl" placeholder="Leave empty for random">
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="generatePuzzle()">
+                            <span>✨</span> Generate
+                        </button>
+                        <button class="btn btn-success" onclick="generateBulk()">
+                            <span>📦</span> Bulk Generate
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Actions</h3>
+                    
+                    <button class="btn btn-secondary" onclick="verifyPuzzle()">
+                        <span>✓</span> Verify Solution
+                    </button>
+                    
+                    <button class="btn btn-secondary" onclick="toggleSolution()">
+                        <span>👁️</span> Toggle Solution
+                    </button>
+                    
+                    <div class="export-options">
+                        <button class="btn btn-primary" onclick="exportPDF()">PDF</button>
+                        <button class="btn btn-primary" onclick="exportPNG()">PNG</button>
+                        <button class="btn btn-primary" onclick="exportJSON()">JSON</button>
+                        <button class="btn btn-primary" onclick="printPuzzle()">Print</button>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="preview-area">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('preview')">Preview</button>
+                    <button class="tab" onclick="switchTab('solution')">Solution</button>
+                    <button class="tab" onclick="switchTab('clues')">Clues</button>
+                    <button class="tab" onclick="switchTab('bulk')">Bulk Results</button>
+                    <button class="tab" onclick="switchTab('settings')">Export Settings</button>
+                </div>
+
+                <div id="preview" class="tab-content active">
+                    <div class="story-box">
+                        <h4 id="previewTitle">🔍 The Missing Heirloom</h4>
+                        <p id="previewPremise">A valuable heirloom has gone missing from the mansion. Use the clues to determine who took it and where it's hidden.</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="value" id="statDifficulty">Medium</div>
+                            <div class="label">Difficulty</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value" id="statClues">0</div>
+                            <div class="label">Total Clues</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value" id="statGiven">0</div>
+                            <div class="label">Given Cells</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="value" id="statUnique">Yes</div>
+                            <div class="label">Unique Solution</div>
+                        </div>
+                    </div>
+
+                    <div id="puzzleContainer"></div>
+
+                    <div style="margin-top: 20px;">
+                        <h4>Verification Status</h4>
+                        <div id="verificationStatus">
+                            <span class="verification-badge badge-warning">Not yet verified</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="solution" class="tab-content">
+                    <h3>Complete Solution</h3>
+                    <div id="solutionContainer"></div>
+                    <div id="solutionExplanation" style="margin-top: 20px;"></div>
+                </div>
+
+                <div id="clues" class="tab-content">
+                    <h3>Generated Clues</h3>
+                    <div id="cluesContainer"></div>
+                </div>
+
+                <div id="bulk" class="tab-content">
+                    <h3>Bulk Generation Results</h3>
+                    <div class="bulk-controls">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bulkProgress"></div>
+                        </div>
+                        <p id="bulkStatus">Ready to generate</p>
+                    </div>
+                    <div id="bulkResults"></div>
+                </div>
+
+                <div id="settings" class="tab-content">
+                    <h3>Export Settings</h3>
+                    <label for="exportFormat">Default Export Format</label>
+                    <select id="exportFormat">
+                        <option value="pdf">PDF (Print-ready)</option>
+                        <option value="png">PNG (Image)</option>
+                        <option value="json">JSON (Data)</option>
+                        <option value="csv">CSV (Spreadsheet)</option>
+                        <option value="kdp">KDP Package</option>
+                    </select>
+
+                    <label for="includeSolution">Include Solution Sheet</label>
+                    <select id="includeSolution">
+                        <option value="separate">Separate Page</option>
+                        <option value="together">Same Page</option>
+                        <option value="none">Don't Include</option>
+                    </select>
+
+                    <label for="paperSize">Paper Size</label>
+                    <select id="paperSize">
+                        <option value="letter">Letter (8.5×11")</option>
+                        <option value="a4">A4</option>
+                        <option value="square">Square (6×9")</option>
+                    </select>
+
+                    <label for="showInstructions">Show Instructions</label>
+                    <select id="showInstructions">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+
+                    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
