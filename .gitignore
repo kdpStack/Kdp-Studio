@@ -1,12 +1,1 @@
-```gitignore
-# Dependencies
-node_modules/
-
-# Editors
-.vscode/
-
-# Environment
-.env
-.env.local
-*.env.*
-```
+Nothing needs to be added to .gitignore since the changes only include source/config files (.md, .js, .html) and no build artifacts, dependencies, or temporary files.
